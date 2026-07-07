@@ -1,0 +1,121 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Sarabun', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* เปลี่ยน URL ตรงนี้เป็นรูปภาพที่คุณต้องการ */
+    background: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1600') no-repeat center center;
+    background-size: cover;
+}
+
+.container {
+    width: 100%;
+    max-width: 550px;
+    padding: 20px;
+}
+
+.card {
+    background: rgba(243, 248, 255, 0.95); /* สีขาวอมฟ้าใสๆ ตามภาพ */
+    padding: 40px 30px;
+    border-radius: 40px; /* ขอบมนมากเป็นพิเศษตามดีไซน์ */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+.card h2 {
+    font-size: 28px;
+    color: #000000;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.card .subtitle {
+    font-size: 15px;
+    color: #333333;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group input {
+    width: 100%;
+    max-width: 400px;
+    padding: 14px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    text-align: center; /* จัดตัวหนังสือให้อยู่ตรงกลางตามภาพ */
+    background-color: #ffffff;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.input-group input::placeholder {
+    color: #a0aec0;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* เว้นระยะห่างระหว่างปุ่ม */
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.btn-back, .btn-confirm {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.btn-back {
+    background-color: #d1d5db; /* สีเทา */
+    color: #1f2937;
+}
+
+.btn-confirm {
+    background-color: #eab308; /* สีเหลืองทองตามภาพ */
+    color: #ffffff;
+}
+
+.btn-back:hover, .btn-confirm:hover {
+    opacity: 0.9;
+}
+
+.btn-back:active, .btn-confirm:active {
+    transform: scale(0.98);
+}
+
+/* สไตล์กล่องแจ้งเตือน */
+.alert {
+    max-width: 400px;
+    margin: 0 auto 15px auto;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+.alert.success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+.alert.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
