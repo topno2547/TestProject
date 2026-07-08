@@ -1,69 +1,105 @@
 <?php
 session_start();
+require_once "../../config.php"; 
 
 $message = "";
 $message_class = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     $account_input = trim($_POST['account_input']);
 
     if (!empty($account_input)) {
-        // 1. สุ่มเลข OTP 6 หลัก
-        $otp_code = rand(100000, 999999);
-        $_SESSION['reset_account'] = $account_input;
-        $_SESSION['generated_otp'] = $otp_code;
 
-        // 2. ตรวจสอบว่าเป็น Email หรือไม่ ถ้าใช่ให้ใช้ API ยิงเมลออกทันที
         if (filter_var($account_input, FILTER_VALIDATE_EMAIL)) {
-            
-            // --- ตั้งค่าสำหรับส่งผ่าน Brevo API (cURL) ---
-            $api_key = ""; 
-            $from_email = "b132a5001@smtp-brevo.com";
-            $to_email = $account_input;
-            
-            $subject = "รหัส OTP สำหรับรีเซ็ตรหัสผ่านของคุณ";
-            $body = "รหัสตรวจสอบยืนยันตัวตนของคุณคือ: " . $otp_code . " \n(มีอายุการใช้งาน 5 นาที)";
 
-            // จัดเตรียมข้อมูลส่งในรูปแบบ JSON ตามคู่มือของ Brevo
-            $data = array(
-                "sender" => array("email" => $from_email, "name" => "ระบบรีเซ็ตรหัสผ่าน"),
-                "to" => array(array("email" => $to_email)),
-                "subject" => $subject,
-                "textContent" => $body
-            );
+            // ตรวจสอบฐานข้อมูล
+            $stmt = $conn->prepare("SELECT user_id, u_email FROM member WHERE u_email = ? LIMIT 1");
+            $stmt->bind_param("s", $account_input);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-            // ใช้ cURL ยิง HTTP POST เข้าหา Brevo API โดยตรง
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://api.brevo.com/v3/smtp/email');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            
-            // ข้ามการเช็คใบรับรอง SSL ของเครื่อง Localhost เพื่อป้องกันการบล็อกความปลอดภัย
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            if ($result->num_rows == 0) {
+                $message = "ไม่พบบัญชีอีเมลนี้ในระบบ";
+                $message_class = "error";
+            } else {
+                $row = $result->fetch_assoc();
 
-            $headers = array();
-            $headers[] = 'Accept: application/json';
-            $headers[] = 'Api-Key: ' . $api_key;
-            $headers[] = 'Content-Type: application/json';
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                // สุ่ม OTP
+                $otp_code = random_int(100000, 999999);
 
-            $result = curl_exec($ch);
-            curl_close($ch);
+                $_SESSION['reset_account'] = $row['u_email'];
+                $_SESSION['generated_otp'] = $otp_code;
 
-            // ส่งคำสั่งเสร็จแล้ว กระโดดไปหน้ากรอก OTP ทันที
-            header("Location: Identity/identity.php");
-            exit();
+                // ==========================================
+                // ตั้งค่า RESEND API
+                // ==========================================
+                $api_key = "re_QUxgTSFX_6spA3raf7j9CJ3ZCFXgHBgg8"; // 1. นำ API Key ที่ก๊อปมาจาก Resend มาวางตรงนี้แทน
+                
+                // 2. ถ้าใช้บัญชีฟรีและยังไม่ได้ต่อ Domain ให้ใช้ onboarding@resend.dev ไปก่อน
+                $from_email = "ระบบรีเซ็ตรหัสผ่าน <onboarding@resend.dev>"; 
+                $to_email = $row['u_email']; 
 
-        } elseif (preg_match('/^[0-9]{9,10}$/', $account_input)) {
-            // กรณีผู้ใช้กรอกเป็นเบอร์มือถือ ให้สลับไปโหมดจำลอง (โชว์รหัสบนจอ) เพื่อทดสอบ
-            header("Location: Identity/identity.php?status=simulated");
-            exit();
+                $subject = "รหัส OTP สำหรับรีเซ็ตรหัสผ่าน";
+                $body = "รหัส OTP ของคุณคือ : " . $otp_code . "\n\nรหัสนี้มีอายุการใช้งาน 5 นาที";
+
+                // จัดเตรียม Payload ตามโครงสร้าง JSON ของ Resend
+                $data = array(
+                    "from" => $from_email,
+                    "to" => array($to_email),
+                    "subject" => $subject,
+                    "text" => $body
+                );
+
+                // เริ่มทำงานด้วย cURL
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://api.resend.com/emails");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+                // ส่ง Header ที่จำเป็นตามคู่มือของ Resend
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    "Authorization: Bearer " . $api_key,
+                    "Content-Type: application/json"
+                ));
+
+                $response = curl_exec($ch);
+                $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+                if (curl_errno($ch)) {
+                    $message = "ระบบเชื่อมต่อเครือข่ายล้มเหลว: " . curl_error($ch);
+                    $message_class = "error";
+                } else {
+                    // Resend หากส่งสำเร็จจะตอบกลับมาด้วย HTTP Code 200
+                    if ($http_code == 200) {
+                        $message = "ส่งรหัส OTP ไปยังอีเมลเรียบร้อยแล้ว!";
+                        $message_class = "success";
+                        header("Location: Identity/identity.php");
+                        exit();
+                    } else {
+                        // เกิดข้อผิดพลาดจากทาง Resend
+                        $err_res = json_decode($response, true);
+                        $err_msg = isset($err_res['message']) ? $err_res['message'] : 'ไม่ทราบสาเหตุ';
+                        
+                        $message = "ส่ง OTP ไม่สำเร็จ (Resend Error: " . $err_msg . ")";
+                        $message_class = "error";
+                    }
+                }
+                curl_close($ch);
+            }
+            $stmt->close();
+
         } else {
-            $message = "รูปแบบอีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง";
+            $message = "รูปแบบอีเมลไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง";
             $message_class = "error";
         }
+    } else {
+        $message = "กรุณากรอกที่อยู่อีเมล";
+        $message_class = "error";
     }
 }
 ?>
