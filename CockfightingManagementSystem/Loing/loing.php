@@ -79,37 +79,91 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เข้าสู่ระบบ - Cockfighting System</title>
-    <link rel="stylesheet" href="loingstyle.css">
+    <title>เข้าสู่ระบบ - Super Kaichon</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&family=Prompt:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body>
 
-<div class="login-container">
-    <h2>เข้าสู่ระบบเพื่อใช้งาน</h2>
-    
-    <?php if($error): ?>
-        <div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
+<body class="login-page">
 
-    <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-        <div class="form-group">
-            <label>ชื่อผู้ใช้งาน</label>
-            <input type="text" name="user_name" placeholder="กรอกชื่อผู้ใช้งาน" required>
-        </div>
-        
-        <div class="form-group">
-            <label>รหัสผ่าน</label>
-            <input type="password" name="u_password" placeholder="กรอกรหัสผ่าน" required>
-        </div>
+    <a href="../index.html" class="back-btn">
+        <i class="bi bi-arrow-left"></i>
+    </a>
 
-        <a href="Newpw/pw.php" class="forgot-password">ลืมรหัสผ่าน?</a>
-        
-        <button type="submit" class="btn-login">เข้าสู่ระบบ</button>
-    </form>
+    <main class="min-h-screen flex items-center justify-center px-4">
+        <section class="login-card w-full max-w-[90%] sm:max-w-[430px] md:max-w-[520px]">
 
-    <div class="footer-links">
-        ยังไม่มีบัญชีใช่ไหม? <a href="Apply/apply.php">สมัครสมาชิก</a>
-</div>
+            <h1 class="text-2xl font-bold text-center mb-6">
+                เข้าสู่ระบบเพื่อใช้งาน
+            </h1>
+
+            <?php if($error): ?>
+                <div class="error-msg">
+                    <?php echo htmlspecialchars($error); ?>
+                </div>
+            <?php endif; ?>
+
+            <form id="login-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+
+                <div class="mb-4">
+                    <label class="login-label">ชื่อผู้เข้าใช้งาน</label>
+
+                    <div class="input-group">
+                        <i class="bi bi-person input-icon"></i>
+                        <input
+                            type="text"
+                            id="username"
+                            name="user_name"
+                            class="login-input"
+                            placeholder="กรุณากรอกชื่อผู้เข้าใช้งาน"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="login-label">รหัสผ่าน</label>
+
+                    <div class="input-group">
+                        <i class="bi bi-lock input-icon"></i>
+                        <input
+                            type="password"
+                            id="password"
+                            name="u_password"
+                            class="login-input"
+                            placeholder="กรุณากรอกรหัสผ่าน"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="text-right mb-6">
+                    <a href="../html/Forgot-Password.html" class="text-xs font-semibold text-gray-700 hover:text-emerald-600">
+                        ลืมรหัสผ่าน?
+                    </a>
+                </div>
+
+                <button type="submit" class="login-submit-btn">
+                    เข้าสู่ระบบ
+                </button>
+
+                <p class="text-center text-sm mt-6">
+                    ยังไม่มีบัญชีใช่ไหม?
+                    <a href="../html/register.html" class="font-bold text-emerald-700">
+                        สมัครสมาชิก
+                    </a>
+                </p>
+
+            </form>
+        </section>
+    </main>
 
 </body>
 </html>
